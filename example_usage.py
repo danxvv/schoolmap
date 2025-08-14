@@ -42,9 +42,9 @@ class ScraperConfig:
     retry_max_delay: float = 60.0
     request_jitter_min: float = 0.1
     request_jitter_max: float = 0.5
-    output_file: str = "ct_codes_coords_googlelinks.txt"
-    progress_file: str = "scraper_progress.txt"
-    failed_codes_file: str = "failed_ct_codes.txt"
+    output_file: str = "ct_codes_coords_googlelinks_federal_primaria.txt"
+    progress_file: str = "scraper_progress_federal_primaria.txt"
+    failed_codes_file: str = "failed_ct_codes_federal_primaria.txt"
 
 
 @dataclass
@@ -185,7 +185,7 @@ async def read_ct_codes_from_file():
     
     try:
         # Read ct_codes from file
-        with open("clave_ct_list.txt", "r", encoding="utf-8") as f:
+        with open("clave_ct_list_federal_primaria.txt", "r", encoding="utf-8") as f:
             all_ct_codes = [line.strip() for line in f if line.strip()]
         
         if not all_ct_codes:
@@ -281,7 +281,7 @@ async def read_ct_codes_from_file():
         logger.info(f"Processing complete. Success: {successful_count}, Failed: {failed_count}")
         
     except FileNotFoundError:
-        error_msg = "File 'clave_ct_list.txt' not found."
+        error_msg = "File 'clave_ct_list_federal_primaria.txt' not found."
         print(f"❌ {error_msg}")
         logger.error(error_msg)
     except Exception as e:
