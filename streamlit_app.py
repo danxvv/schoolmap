@@ -100,15 +100,55 @@ def merge_school_data() -> pd.DataFrame:
 def create_map(df: pd.DataFrame, selected_schools: List[str] = None) -> folium.Map:
     """Create a folium map with school markers."""
     if df.empty:
-        # Default map centered on Mexico
-        m = folium.Map(location=[23.6345, -102.5528], zoom_start=6)
+        # Default map centered on Mexico with better tile layer
+        m = folium.Map(
+            location=[23.6345, -102.5528], 
+            zoom_start=6,
+            tiles='OpenStreetMap',
+            prefer_canvas=True,
+            max_zoom=18,
+            min_zoom=3
+        )
         return m
     
     # Calculate center of visible schools
     center_lat = df['latitude'].mean()
     center_lon = df['longitude'].mean()
     
-    m = folium.Map(location=[center_lat, center_lon], zoom_start=8)
+    # Create map with better default settings
+    m = folium.Map(
+        location=[center_lat, center_lon], 
+        zoom_start=8,
+        tiles=None,  # We'll add custom tiles
+        prefer_canvas=True,
+        max_zoom=18,
+        min_zoom=3
+    )
+    
+    # Add multiple tile layer options for better visibility
+    folium.TileLayer(
+        tiles='OpenStreetMap',
+        name='OpenStreetMap',
+        overlay=False,
+        control=True
+    ).add_to(m)
+    
+    folium.TileLayer(
+        tiles='CartoDB positron',
+        name='Light Map',
+        overlay=False,
+        control=True
+    ).add_to(m)
+    
+    folium.TileLayer(
+        tiles='CartoDB dark_matter',
+        name='Dark Map',
+        overlay=False,
+        control=True
+    ).add_to(m)
+    
+    # Add layer control to switch between map styles
+    folium.LayerControl().add_to(m)
     
     # Add markers for each school
     for idx, row in df.iterrows():
@@ -123,10 +163,16 @@ def create_map(df: pd.DataFrame, selected_schools: List[str] = None) -> folium.M
             popup_content += f"<br><b>Name:</b> {row['NOMBRE CT']}"
         if 'LOCALIDAD CT' in row and pd.notna(row['LOCALIDAD CT']):
             popup_content += f"<br><b>Location:</b> {row['LOCALIDAD CT']}"
+        if 'MUNICIPIO CT' in row and pd.notna(row['MUNICIPIO CT']):
+            popup_content += f"<br><b>Municipality:</b> {row['MUNICIPIO CT']}"
         if 'CORDE' in row and pd.notna(row['CORDE']):
             popup_content += f"<br><b>Region:</b> {row['CORDE']}"
         if 'NIVEL' in row and pd.notna(row['NIVEL']):
             popup_content += f"<br><b>Level:</b> {row['NIVEL']}"
+        if 'FUNCIÓN Y CATALOGO' in row and pd.notna(row['FUNCIÓN Y CATALOGO']):
+            popup_content += f"<br><b>Function:</b> {row['FUNCIÓN Y CATALOGO']}"
+        if 'TIPO ASPIRANTE' in row and pd.notna(row['TIPO ASPIRANTE']):
+            popup_content += f"<br><b>Position Type:</b> {row['TIPO ASPIRANTE']}"
         
         # Add Google Maps button
         google_maps_url = f"https://www.google.com/maps/place/{row['latitude']},{row['longitude']}"
@@ -180,6 +226,18 @@ def main():
     levels = ['All'] + sorted(df['NIVEL'].dropna().unique().tolist()) if 'NIVEL' in df.columns else ['All']
     selected_level = st.sidebar.selectbox("Select Education Level:", levels)
     
+    # Function and catalog filter
+    functions = ['All'] + sorted(df['FUNCIÓN Y CATALOGO'].dropna().unique().tolist()) if 'FUNCIÓN Y CATALOGO' in df.columns else ['All']
+    selected_function = st.sidebar.selectbox("Select Function/Catalog:", functions)
+    
+    # Tipo aspirante filter
+    tipos = ['All'] + sorted(df['TIPO ASPIRANTE'].dropna().unique().tolist()) if 'TIPO ASPIRANTE' in df.columns else ['All']
+    selected_tipo = st.sidebar.selectbox("Select Position Type:", tipos)
+    
+    # Municipality filter
+    municipios = ['All'] + sorted(df['MUNICIPIO CT'].dropna().unique().tolist()) if 'MUNICIPIO CT' in df.columns else ['All']
+    selected_municipio = st.sidebar.selectbox("Select Municipality:", municipios)
+    
     # Apply filters
     filtered_df = df.copy()
     
@@ -191,6 +249,15 @@ def main():
     
     if selected_level != 'All' and 'NIVEL' in df.columns:
         filtered_df = filtered_df[filtered_df['NIVEL'] == selected_level]
+    
+    if selected_function != 'All' and 'FUNCIÓN Y CATALOGO' in df.columns:
+        filtered_df = filtered_df[filtered_df['FUNCIÓN Y CATALOGO'] == selected_function]
+    
+    if selected_tipo != 'All' and 'TIPO ASPIRANTE' in df.columns:
+        filtered_df = filtered_df[filtered_df['TIPO ASPIRANTE'] == selected_tipo]
+    
+    if selected_municipio != 'All' and 'MUNICIPIO CT' in df.columns:
+        filtered_df = filtered_df[filtered_df['MUNICIPIO CT'] == selected_municipio]
     
     # Statistics
     col1, col2, col3, col4 = st.columns(4)
@@ -216,8 +283,14 @@ def main():
         # Create map
         school_map = create_map(filtered_df)
         
-        # Display map
-        map_data = st_folium(school_map, width=700, height=500)
+        # Display map with improved settings
+        map_data = st_folium(
+            school_map, 
+            width=None,  # Use full width
+            height=500,
+            returned_objects=["last_object_clicked"],
+            use_container_width=True
+        )
         
         # Display filtered data table
         if st.checkbox("Show Data Table", value=False):
@@ -229,10 +302,16 @@ def main():
                 display_columns.append('NOMBRE CT')
             if 'LOCALIDAD CT' in filtered_df.columns:
                 display_columns.append('LOCALIDAD CT')
+            if 'MUNICIPIO CT' in filtered_df.columns:
+                display_columns.append('MUNICIPIO CT')
             if 'CORDE' in filtered_df.columns:
                 display_columns.append('CORDE')
             if 'NIVEL' in filtered_df.columns:
                 display_columns.append('NIVEL')
+            if 'FUNCIÓN Y CATALOGO' in filtered_df.columns:
+                display_columns.append('FUNCIÓN Y CATALOGO')
+            if 'TIPO ASPIRANTE' in filtered_df.columns:
+                display_columns.append('TIPO ASPIRANTE')
             
             st.dataframe(
                 filtered_df[display_columns].reset_index(drop=True),
