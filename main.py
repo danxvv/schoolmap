@@ -18,8 +18,8 @@ def extract_clave_ct(csv_file_path, output_txt_path):
     return clave_ct_list
 
 def main():
-    csv_file = "PRIMARIA FEDERAL(PRIMARIA FEDERAL).csv"
-    output_file = "clave_ct_list_federal_primaria.txt"
+    csv_file = "filtrados.csv"
+    output_file = "clave_ct_list_filtrados.txt"
     
     try:
         claves = extract_clave_ct(csv_file, output_file)

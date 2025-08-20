@@ -16,7 +16,7 @@ st.set_page_config(
 def load_coordinates_data() -> pd.DataFrame:
     """Load and parse the coordinates data from the text file."""
     try:
-        with open('ct_codes_coords_googlelinks_federal_primaria.txt', 'r', encoding='utf-8') as f:
+        with open('ct_codes_coords_googlelinks_filtrados.txt', 'r', encoding='utf-8') as f:
             lines = f.readlines()
         
         data = []
@@ -53,7 +53,7 @@ def load_school_metadata() -> pd.DataFrame:
         # Try different encodings
         for encoding in ['utf-8', 'latin1', 'cp1252']:
             try:
-                df = pd.read_csv('PRIMARIA FEDERAL(PRIMARIA FEDERAL).csv', encoding=encoding)
+                df = pd.read_csv('filtrados.csv', encoding=encoding)
                 break
             except UnicodeDecodeError:
                 continue

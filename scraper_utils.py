@@ -60,10 +60,10 @@ def check_failed_codes(failed_file: str = "failed_ct_codes.txt") -> List[Tuple[s
 
 def reset_progress(
     backup: bool = True,
-    progress_file: str = "scraper_progress.txt",
-    output_file: str = "ct_codes_coords_googlelinks.txt",
-    failed_file: str = "failed_ct_codes.txt",
-    log_file: str = "scraper_log.txt"
+    progress_file: str = "scraper_progress_filtrados.txt",
+    output_file: str = "ct_codes_coords_googlelinks_filtrados.txt",
+    failed_file: str = "failed_ct_codes_filtrados.txt",
+    log_file: str = "scraper_log_filtrados.txt"
 ):
     """Reset all progress files, optionally creating backups."""
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
